@@ -1,48 +1,34 @@
-# PokeSync - Universal Citra Save Sync Tool
+# PokeSync - Universal Citra Save Sync
 
-PokeSync is a modern, cross-platform tool designed to synchronize your 3DS save files across different devices. Whether you're playing on a Windows PC, a Mac, or even via Docker, PokeSync ensures your saves are always up to date.
+PokeSync is a simple tool to keep your Citra saves synchronized between multiple computers using a Cloud folder (Dropbox/OneDrive) or GitHub.
 
-## 🚀 Features
-- **Universal Detection**: Automatically identifies all 3DS games in your Citra directory.
-- **Enhanced Pokémon Support**: Specialized detection for all mainline Pokémon games (X/Y, ORAS, Sun/Moon, Ultra Sun/Moon).
-- **Dual Sync Modes**:
-    - **Local Cloud**: Sync using services like Dropbox, OneDrive, or Google Drive.
-    - **GitHub**: Sync using a private GitHub repository for version-controlled saves.
-- **Search & Filter**: Easily find games by name or Title ID.
-- **Safety Backups**: Automatically creates timestamped backups of your local saves before every 'Pull' operation.
-- **Modern GUI**: A clean, dark-themed interface built with CustomTkinter.
-- **Docker Support**: Run the application in a containerized environment.
+## ✨ Features
+- **Universal Sync**: Works with ALL 3DS games (Pokémon, Zelda, Mario, etc.).
+- **Safe**: Automatically backs up your saves before syncing.
+- **Smart**: Warns you if you are about to overwrite a newer save.
+- **Easy UI**: Simple buttons to "Push" (upload) or "Pull" (download) your progress.
 
-## 🛠️ Installation
+## 🚀 Quick Start
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/yourusername/pokesync.git
-   cd pokesync
-   ```
-
-2. **Install dependencies**:
+1. **Install Python**: Make sure you have Python installed.
+2. **Install requirements**:
    ```bash
    pip install -r requirements.txt
    ```
-
 3. **Run the app**:
    ```bash
    python main.py
    ```
 
-## 📖 How to Use
-Check out the [GUIDE.md](GUIDE.md) for a detailed step-by-step setup for both Local and GitHub sync modes.
+## 📖 How to Sync
 
-## 🐳 Docker Support
-For instructions on running PokeSync inside a Docker container, see [README_DOCKER.md](README_DOCKER.md).
+### Option A: Local Cloud (Easiest)
+1. Set **Sync Mode** to "Local Folder".
+2. Click **Browse Cloud Path** and select a folder in your Dropbox, OneDrive, or Google Drive.
+3. Use **Push** to upload your save and **Pull** on your other computer.
+
+### Option B: GitHub (Advanced)
+See the [GUIDE.md](GUIDE.md) for step-by-step GitHub setup.
 
 ## 🛡️ Safety
-Your saves are precious! PokeSync never overwrites a local save without first creating a backup in the `backups/` directory.
-
-## 📝 Supported Games
-While PokeSync can detect **any** 3DS game with a valid save, it has built-in names for:
-- All mainline Pokémon 3DS games and demos.
-- Pokémon Mystery Dungeon series.
-- Pokémon Rumble World.
-- ...and more! Unknown games will be displayed with their Title ID.
+Your saves are stored in `backups/` every time you pull, so you never lose progress!

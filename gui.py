@@ -23,7 +23,6 @@ class PokeSyncGUI(ctk.CTk):
         # Sidebar for Settings
         self.sidebar = ctk.CTkFrame(self, width=250, corner_radius=0)
         self.sidebar.grid(row=0, column=0, rowspan=2, sticky="nsew")
-        self.sidebar.grid_rowconfigure(8, weight=1)
 
         self.logo_label = ctk.CTkLabel(self.sidebar, text="PokeSync", font=ctk.CTkFont(size=20, weight="bold"))
         self.logo_label.pack(padx=20, pady=(20, 10))
@@ -45,10 +44,13 @@ class PokeSyncGUI(ctk.CTk):
 
         # GitHub Sync Settings
         self.github_frame = ctk.CTkFrame(self.sidebar, fg_color="transparent")
-
         self.entry_repo = self.create_setting_entry(self.github_frame, "Repo URL:", "github_repo_url")
         self.entry_user = self.create_setting_entry(self.github_frame, "Username:", "github_username")
         self.entry_token = self.create_setting_entry(self.github_frame, "Token/PAT:", "github_token", show="*")
+
+        # Bottom Spacer (for pack)
+        self.sidebar_spacer = ctk.CTkLabel(self.sidebar, text="")
+        self.sidebar_spacer.pack(side="bottom", pady=20)
 
         self.update_settings_visibility(initial_mode)
 
@@ -95,12 +97,14 @@ class PokeSyncGUI(ctk.CTk):
         self.status_label.configure(text=f"Sync mode changed to {mode}")
 
     def update_settings_visibility(self, mode):
+        # Always remove both first
+        self.local_frame.pack_forget()
+        self.github_frame.pack_forget()
+
         if mode == "GitHub":
-            self.local_frame.pack_forget()
-            self.github_frame.pack(fill="x", before=self.sidebar.grid_slaves(row=8)[0] if self.sidebar.grid_slaves(row=8) else None)
+            self.github_frame.pack(fill="x")
         else:
-            self.github_frame.pack_forget()
-            self.local_frame.pack(fill="x", before=self.sidebar.grid_slaves(row=8)[0] if self.sidebar.grid_slaves(row=8) else None)
+            self.local_frame.pack(fill="x")
 
     def browse_cloud_path(self):
         path = filedialog.askdirectory()
