@@ -63,9 +63,10 @@ class SyncManager:
         return os.path.join(SAVE_REPO_DIR, game_id, "main")
 
     def _init_github_repo(self):
-        url = self.config.get("github_repo_url")
-        token = self.config.get("github_token")
-        username = self.config.get("github_username")
+        import urllib.parse
+        url = self.config.get("github_repo_url", "").strip()
+        token = self.config.get("github_token", "").strip()
+        username = self.config.get("github_username", "").strip()
 
         if not url or not token or not username:
             return False, "GitHub configuration incomplete. Need URL, Username, and Token."
@@ -77,7 +78,20 @@ class SyncManager:
         except (subprocess.CalledProcessError, FileNotFoundError):
             return False, "Git is not installed or not in PATH. Please install Git to use GitHub sync."
 
-        auth_url = url.replace("https://", f"https://{username}:{token}@")
+        # Robust URL handling
+        if not url.startswith("https://"):
+            if "/" in url and not url.startswith("github.com"):
+                url = "https://github.com/" + url
+            else:
+                url = "https://" + url
+
+        if not url.endswith(".git"):
+            url = url + ".git"
+
+        # Safe encoding for username and token (handles spaces, etc.)
+        safe_user = urllib.parse.quote(username)
+        safe_token = urllib.parse.quote(token)
+        auth_url = url.replace("https://", f"https://{safe_user}:{safe_token}@")
 
         try:
             if os.path.exists(SAVE_REPO_DIR):
