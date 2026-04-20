@@ -1,0 +1,7 @@
+__pycache__/
+*.py[cod]
+*.class
+config.json
+test_citra_dir/
+test_sync_env/
+test_e2e_env/
