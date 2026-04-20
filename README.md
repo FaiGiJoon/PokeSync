@@ -1,38 +1,48 @@
-# PokeSync - Citra Save Cloud Sync
+# PokeSync - Universal Citra Save Sync Tool
 
-PokeSync is a simple, cross-platform tool designed to synchronize your Pokémon 3DS save files across different computers (e.g., Windows and macOS) using a cloud storage service like Dropbox, Google Drive, or OneDrive.
+PokeSync is a modern, cross-platform tool designed to synchronize your 3DS save files across different devices. Whether you're playing on a Windows PC, a Mac, or even via Docker, PokeSync ensures your saves are always up to date.
 
-## Features
-- **Auto-detection**: Automatically finds your Citra data folder on Windows and macOS.
-- **Game Support**: Supports Pokémon X, Y, Omega Ruby, and Alpha Sapphire.
-- **Safe Syncing**: Creates a timestamped backup of your local save before pulling from the cloud.
-- **Modern UI**: Easy-to-use interface built with CustomTkinter.
+## 🚀 Features
+- **Universal Detection**: Automatically identifies all 3DS games in your Citra directory.
+- **Enhanced Pokémon Support**: Specialized detection for all mainline Pokémon games (X/Y, ORAS, Sun/Moon, Ultra Sun/Moon).
+- **Dual Sync Modes**:
+    - **Local Cloud**: Sync using services like Dropbox, OneDrive, or Google Drive.
+    - **GitHub**: Sync using a private GitHub repository for version-controlled saves.
+- **Search & Filter**: Easily find games by name or Title ID.
+- **Safety Backups**: Automatically creates timestamped backups of your local saves before every 'Pull' operation.
+- **Modern GUI**: A clean, dark-themed interface built with CustomTkinter.
+- **Docker Support**: Run the application in a containerized environment.
 
-## Requirements
-- Python 3.x
-- `customtkinter`
-- `pillow`
+## 🛠️ Installation
 
-## Installation
-1. Clone or download this repository.
-2. Install the dependencies:
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/yourusername/pokesync.git
+   cd pokesync
+   ```
+
+2. **Install dependencies**:
    ```bash
    pip install -r requirements.txt
    ```
 
-## How to Use
-1. **Launch the application**:
+3. **Run the app**:
    ```bash
    python main.py
    ```
-2. **Set your Cloud Folder**:
-   - Click "Browse" and select a folder that is synced to your cloud (e.g., a folder inside your Dropbox or OneDrive).
-3. **Sync your saves**:
-   - **Push to Cloud**: Click this on your "source" computer to upload your current save to the cloud.
-   - **Pull from Cloud**: Click this on your "target" computer to download the save from the cloud into your Citra folder. A backup of the local save will be created automatically.
 
-## Supported Games
-- Pokémon X
-- Pokémon Y
-- Pokémon Omega Ruby
-- Pokémon Alpha Sapphire
+## 📖 How to Use
+Check out the [GUIDE.md](GUIDE.md) for a detailed step-by-step setup for both Local and GitHub sync modes.
+
+## 🐳 Docker Support
+For instructions on running PokeSync inside a Docker container, see [README_DOCKER.md](README_DOCKER.md).
+
+## 🛡️ Safety
+Your saves are precious! PokeSync never overwrites a local save without first creating a backup in the `backups/` directory.
+
+## 📝 Supported Games
+While PokeSync can detect **any** 3DS game with a valid save, it has built-in names for:
+- All mainline Pokémon 3DS games and demos.
+- Pokémon Mystery Dungeon series.
+- Pokémon Rumble World.
+- ...and more! Unknown games will be displayed with their Title ID.
