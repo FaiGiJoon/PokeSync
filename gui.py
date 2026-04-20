@@ -8,7 +8,7 @@ class PokeSyncGUI(ctk.CTk):
         self.manager = sync_manager
         
         self.title("PokeSync - Universal Citra Save Sync")
-        self.geometry("900x700")
+        self.geometry("900x750")
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("blue")
 
@@ -23,18 +23,17 @@ class PokeSyncGUI(ctk.CTk):
         # Sidebar for Settings
         self.sidebar = ctk.CTkFrame(self, width=250, corner_radius=0)
         self.sidebar.grid(row=0, column=0, rowspan=2, sticky="nsew")
-        self.sidebar.grid_rowconfigure(8, weight=1)
 
         self.logo_label = ctk.CTkLabel(self.sidebar, text="PokeSync", font=ctk.CTkFont(size=20, weight="bold"))
-        self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
+        self.logo_label.pack(padx=20, pady=(20, 10))
 
         # Sync Mode Toggle
         self.mode_label = ctk.CTkLabel(self.sidebar, text="Sync Mode:", anchor="w")
-        self.mode_label.grid(row=1, column=0, padx=20, pady=(10, 0), sticky="w")
+        self.mode_label.pack(padx=20, pady=(10, 0), fill="x")
 
         self.mode_switch = ctk.CTkOptionMenu(self.sidebar, values=["Local Folder", "GitHub"],
                                               command=self.change_sync_mode)
-        self.mode_switch.grid(row=2, column=0, padx=20, pady=(0, 20), sticky="ew")
+        self.mode_switch.pack(padx=20, pady=(0, 20), fill="x")
         initial_mode = "GitHub" if self.manager.config.get("sync_mode") == "github" else "Local Folder"
         self.mode_switch.set(initial_mode)
 
@@ -45,10 +44,13 @@ class PokeSyncGUI(ctk.CTk):
 
         # GitHub Sync Settings
         self.github_frame = ctk.CTkFrame(self.sidebar, fg_color="transparent")
-
         self.entry_repo = self.create_setting_entry(self.github_frame, "Repo URL:", "github_repo_url")
         self.entry_user = self.create_setting_entry(self.github_frame, "Username:", "github_username")
         self.entry_token = self.create_setting_entry(self.github_frame, "Token/PAT:", "github_token", show="*")
+
+        # Bottom Spacer (for pack)
+        self.sidebar_spacer = ctk.CTkLabel(self.sidebar, text="")
+        self.sidebar_spacer.pack(side="bottom", pady=20)
 
         self.update_settings_visibility(initial_mode)
 
@@ -81,8 +83,12 @@ class PokeSyncGUI(ctk.CTk):
         entry = ctk.CTkEntry(parent, show=show)
         entry.insert(0, self.manager.config.get(config_key, ""))
         entry.pack(padx=20, pady=(0, 5), fill="x")
-        entry.bind("<FocusOut>", lambda e, k=config_key, ent=entry: self.manager.set_config(k, ent.get()))
+        entry.bind("<FocusOut>", lambda e, k=config_key, ent=entry: self.save_setting(k, ent.get()))
         return entry
+
+    def save_setting(self, key, value):
+        self.manager.set_config(key, value)
+        self.status_label.configure(text=f"Setting '{key}' saved.")
 
     def change_sync_mode(self, mode):
         self.update_settings_visibility(mode)
@@ -91,12 +97,14 @@ class PokeSyncGUI(ctk.CTk):
         self.status_label.configure(text=f"Sync mode changed to {mode}")
 
     def update_settings_visibility(self, mode):
+        # Always remove both first
+        self.local_frame.pack_forget()
+        self.github_frame.pack_forget()
+
         if mode == "GitHub":
-            self.local_frame.pack_forget()
-            self.github_frame.pack(fill="x", before=self.sidebar.grid_slaves(row=8)[0] if self.sidebar.grid_slaves(row=8) else None)
+            self.github_frame.pack(fill="x")
         else:
-            self.github_frame.pack_forget()
-            self.local_frame.pack(fill="x", before=self.sidebar.grid_slaves(row=8)[0] if self.sidebar.grid_slaves(row=8) else None)
+            self.local_frame.pack(fill="x")
 
     def browse_cloud_path(self):
         path = filedialog.askdirectory()
@@ -151,6 +159,21 @@ class PokeSyncGUI(ctk.CTk):
         btn_pull.grid(row=0, column=2, rowspan=2, padx=5, pady=10)
 
     def action_push(self, game):
+        self.status_label.configure(text=f"Checking conflicts for {game['name']}...")
+        self.update()
+
+        status, msg = self.manager.check_conflict(game)
+        if status == "remote_newer":
+            confirm = messagebox.askyesno("Conflict Detected", f"The REMOTE save is NEWER than your local save.\n\nRemote: {msg}\n\nAre you sure you want to OVERWRITE the remote save?")
+            if not confirm:
+                self.status_label.configure(text="Push cancelled by user.")
+                return
+        elif status == "up_to_date":
+            confirm = messagebox.askyesno("Up to Date", "Saves are already synchronized. Push anyway?")
+            if not confirm:
+                self.status_label.configure(text="Push cancelled.")
+                return
+
         self.status_label.configure(text=f"Pushing {game['name']}...")
         self.update()
         success, message = self.manager.push_save(game)
@@ -162,9 +185,24 @@ class PokeSyncGUI(ctk.CTk):
             messagebox.showerror("Error", message)
 
     def action_pull(self, game):
-        confirm = messagebox.askyesno("Confirm Pull", f"Overwrite local save for {game['name']}? A backup will be created.")
-        if not confirm:
-            return
+        self.status_label.configure(text=f"Checking conflicts for {game['name']}...")
+        self.update()
+
+        status, msg = self.manager.check_conflict(game)
+        if status == "local_newer":
+            confirm = messagebox.askyesno("Conflict Detected", f"Your LOCAL save is NEWER than the remote save.\n\nLocal: {msg}\n\nAre you sure you want to OVERWRITE your local save? (A backup will be created)")
+            if not confirm:
+                self.status_label.configure(text="Pull cancelled by user.")
+                return
+        elif status == "up_to_date":
+            confirm = messagebox.askyesno("Up to Date", "Saves are already synchronized. Pull anyway?")
+            if not confirm:
+                self.status_label.configure(text="Pull cancelled.")
+                return
+        else:
+            confirm = messagebox.askyesno("Confirm Pull", f"Overwrite local save for {game['name']}? A backup will be created.")
+            if not confirm:
+                return
 
         self.status_label.configure(text=f"Pulling {game['name']}...")
         self.update()
