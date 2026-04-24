@@ -51,6 +51,11 @@ GAME_NAMES = {
 
 def get_citra_base_path():
     """Returns the base path for Citra user data based on the OS."""
+    # Check for environment variable override
+    env_path = os.environ.get("CITRA_PATH")
+    if env_path:
+        return os.path.abspath(env_path)
+
     system = platform.system()
     if system == "Windows":
         return os.path.join(os.environ.get("APPDATA", ""), "Citra")

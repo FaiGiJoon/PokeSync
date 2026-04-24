@@ -1,10 +1,11 @@
 FROM python:3.12-slim
 
-# Install system dependencies for GUI
+# Install system dependencies for GUI and remote sync
 RUN apt-get update && apt-get install -y \
     python3-tk \
     libtk8.6 \
     git \
+    openssh-client \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

@@ -1,0 +1,16 @@
+services:
+  pokesync:
+    build: .
+    container_name: pokesync
+    environment:
+      - DISPLAY=${DISPLAY:-:0}
+      - CITRA_PATH=/app/citra_data
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ./backups:/app/backups
+      - ./save_repo:/app/save_repo
+      - ./config.json:/app/config.json
+      # Mount your local Citra directory here
+      - ${CITRA_SAVE_PATH:-~/.local/share/citra-emu}:/app/citra_data
+    network_mode: host
+    privileged: true # Often needed for X11 access
