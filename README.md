@@ -24,6 +24,13 @@ git clone <your-repo-url>; cd pokesync
 python main.py
 ```
 
+### macOS
+```bash
+git clone <your-repo-url> && cd pokesync
+./setup_macos.sh
+python3 main.py
+```
+
 ### Docker (Production Ready)
 ```bash
 docker-compose up -d
