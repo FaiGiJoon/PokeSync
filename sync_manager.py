@@ -1,6 +1,8 @@
 import os
 import json
 import shutil
+import subprocess
+import urllib.parse
 from datetime import datetime
 from git import Repo, GitCommandError
 from utils import get_citra_base_path, get_save_data_root, find_game_saves
@@ -13,6 +15,8 @@ class SyncManager:
         self.config = self.load_config()
         self.citra_path = get_citra_base_path()
         self.title_root = get_save_data_root(self.citra_path)
+        self._git_verified = False
+        self._repo = None
     
     def load_config(self):
         if os.path.exists(CONFIG_FILE):
@@ -45,8 +49,12 @@ class SyncManager:
             json.dump(self.config, f, indent=4)
 
     def set_config(self, key, value):
-        self.config[key] = value
-        self.save_config()
+        if self.config.get(key) != value:
+            self.config[key] = value
+            self.save_config()
+            # Invalidate repo cache if GitHub settings change
+            if key in ["github_repo_url", "github_username", "github_token"]:
+                self._repo = None
 
     def set_cloud_path(self, path):
         self.set_config("cloud_path", path)
@@ -63,7 +71,6 @@ class SyncManager:
         return os.path.join(SAVE_REPO_DIR, game_id, "main")
 
     def _init_github_repo(self):
-        import urllib.parse
         url = self.config.get("github_repo_url", "").strip()
         token = self.config.get("github_token", "").strip()
         username = self.config.get("github_username", "").strip()
@@ -71,12 +78,13 @@ class SyncManager:
         if not url or not token or not username:
             return False, "GitHub configuration incomplete. Need URL, Username, and Token."
 
-        # Verify git is installed
-        try:
-            import subprocess
-            subprocess.run(["git", "--version"], check=True, capture_output=True)
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            return False, "Git is not installed or not in PATH. Please install Git to use GitHub sync."
+        # Verify git is installed (cached)
+        if not self._git_verified:
+            try:
+                subprocess.run(["git", "--version"], check=True, capture_output=True)
+                self._git_verified = True
+            except (subprocess.CalledProcessError, FileNotFoundError):
+                return False, "Git is not installed or not in PATH. Please install Git to use GitHub sync."
 
         # Robust URL handling
         if not url.startswith("https://"):
@@ -97,13 +105,14 @@ class SyncManager:
             if os.path.exists(SAVE_REPO_DIR):
                 if not os.path.exists(os.path.join(SAVE_REPO_DIR, ".git")):
                     shutil.rmtree(SAVE_REPO_DIR)
-                    Repo.clone_from(auth_url, SAVE_REPO_DIR, env={"GIT_TERMINAL_PROMPT": "0"})
+                    self._repo = Repo.clone_from(auth_url, SAVE_REPO_DIR, env={"GIT_TERMINAL_PROMPT": "0"})
                 else:
-                    repo = Repo(SAVE_REPO_DIR)
-                    if repo.remotes.origin.url != auth_url:
-                        repo.remotes.origin.set_url(auth_url)
+                    if not self._repo:
+                        self._repo = Repo(SAVE_REPO_DIR)
+                    if self._repo.remotes.origin.url != auth_url:
+                        self._repo.remotes.origin.set_url(auth_url)
             else:
-                Repo.clone_from(auth_url, SAVE_REPO_DIR, env={"GIT_TERMINAL_PROMPT": "0"})
+                self._repo = Repo.clone_from(auth_url, SAVE_REPO_DIR, env={"GIT_TERMINAL_PROMPT": "0"})
             return True, "GitHub repo ready."
         except GitCommandError as e:
             if "Authentication failed" in str(e):
@@ -125,8 +134,7 @@ class SyncManager:
             success, msg = self._init_github_repo()
             if not success: return "error", msg
             try:
-                repo = Repo(SAVE_REPO_DIR)
-                repo.remotes.origin.pull()
+                self._repo.remotes.origin.pull()
                 remote_path = self._get_github_sync_path(game["id"])
             except Exception as e:
                 return "error", str(e)
@@ -192,9 +200,8 @@ class SyncManager:
         if not success: return False, msg
 
         try:
-            repo = Repo(SAVE_REPO_DIR)
             try:
-                repo.remotes.origin.pull()
+                self._repo.remotes.origin.pull()
             except Exception:
                 pass
 
@@ -203,9 +210,9 @@ class SyncManager:
             shutil.copy2(game["local_path"], dest_path)
 
             relative_path = os.path.join(game["id"], "main")
-            repo.index.add([relative_path])
-            repo.index.commit(f"Update save for {game['name']} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-            repo.remotes.origin.push()
+            self._repo.index.add([relative_path])
+            self._repo.index.commit(f"Update save for {game['name']} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            self._repo.remotes.origin.push()
 
             return True, f"Successfully pushed {game['name']} to GitHub."
         except Exception as e:
@@ -216,8 +223,7 @@ class SyncManager:
         if not success: return False, msg
 
         try:
-            repo = Repo(SAVE_REPO_DIR)
-            repo.remotes.origin.pull()
+            self._repo.remotes.origin.pull()
 
             source_path = self._get_github_sync_path(game["id"])
             if not os.path.exists(source_path):

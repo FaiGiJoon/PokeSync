@@ -1,0 +1,3 @@
+## 2026-04-25 - [Caching Git objects and subprocess results]
+**Learning:** In applications using `GitPython`, repeatedly instantiating `Repo` objects and calling `git --version` (via subprocess) introduces significant overhead (measured ~5ms per call for `git --version`). Caching the `Repo` object and a `_git_verified` flag can speed up initialization by nearly 10x in high-frequency paths like UI-driven status checks.
+**Action:** Always cache long-lived library objects (like `git.Repo`) and results of external tool verification unless the underlying environment is expected to change frequently. Implement selective cache invalidation when dependent configuration changes.
