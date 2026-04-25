@@ -1,0 +1,14 @@
+[Unit]
+Description=PokeSync Universal Citra Save Sync
+After=network.target
+
+[Service]
+Type=simple
+User=%u
+WorkingDirectory=%h/pokesync
+ExecStart=/usr/bin/python3 main.py
+Restart=on-failure
+Environment=DISPLAY=:0
+
+[Install]
+WantedBy=graphical.target
