@@ -1,40 +1,79 @@
 #!/bin/bash
 
-# PokeSync Setup Script for Linux
+# Project Aether-Vault: Orchestration Script (Linux)
 
-echo "🚀 Starting PokeSync setup..."
+set -e
 
-# Check for Python
-if ! command -v python3 &> /dev/null; then
-    echo "❌ Python3 is not installed. Please install it and try again."
-    exit 1
+echo "Initializing Hardened Infrastructure..."
+
+# Logging setup
+mkdir -p logs
+
+# Check for Virtualization support
+if grep -Eoc "vmx|svm" /proc/cpuinfo > /dev/null; then
+    echo "Virtualization support detected."
+else
+    echo "Warning: Hardware virtualization (VT-x/AMD-V) not detected. Docker may perform poorly."
 fi
 
-# Check for Git
-if ! command -v git &> /dev/null; then
-    echo "❌ Git is not installed. Please install it and try again."
-    exit 1
-fi
+# Automated Dependency Installation
+install_dependency() {
+    if ! command -v "$1" &> /dev/null; then
+        echo "Installing $1..."
+        case "$1" in
+            docker)
+                curl -fsSL https://get.docker.com | sh
+                ;;
+            git)
+                sudo apt-get update && sudo apt-get install -y git
+                ;;
+            tailscale)
+                curl -fsSL https://tailscale.com/install.sh | sh
+                ;;
+        esac
+    fi
+}
 
-# Create directories
-echo "📁 Creating necessary directories..."
+install_dependency git
+install_dependency docker
+install_dependency tailscale
+
+# Directory lifecycle management
+echo "Configuring data lifecycle directories..."
 mkdir -p backups
 mkdir -p save_repo
+mkdir -p logs
 
-# Create config.json if it doesn't exist to prevent Docker volume issues
-if [ ! -f config.json ]; then
-    echo "⚙️ Initializing config.json..."
-    echo "{}" > config.json
+# Initializing configuration
+if [ ! -f .env ]; then
+    echo "Creating .env template..."
+    cat <<EOF > .env
+TS_AUTHKEY=
+DISCORD_WEBHOOK_URL=
+CITRA_SAVE_PATH=~/.local/share/citra-emu
+EOF
 fi
 
-# Install dependencies
-echo "📦 Installing dependencies..."
-python3 -m pip install -r requirements.txt
+# Service persistence (Systemd)
+echo "Configuring service persistence..."
+if [ ! -f /etc/systemd/system/pokesync-vault.service ]; then
+    cat <<EOF | sudo tee /etc/systemd/system/pokesync-vault.service
+[Unit]
+Description=Project Aether-Vault Core
+After=network.target docker.service
 
-if [ $? -eq 0 ]; then
-    echo "✅ Setup complete! You can now run PokeSync using:"
-    echo "   python3 main.py"
-else
-    echo "❌ Failed to install dependencies. Please check your internet connection and try again."
-    exit 1
+[Service]
+Type=simple
+WorkingDirectory=$(pwd)
+ExecStart=/usr/bin/docker-compose up
+ExecStop=/usr/bin/docker-compose down
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+    sudo systemctl daemon-reload
+    sudo systemctl enable pokesync-vault.service
 fi
+
+echo "Phase 1: Infrastructure initialization complete."

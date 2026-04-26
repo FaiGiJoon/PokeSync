@@ -2,40 +2,40 @@
 
 # PokeSync Setup Script for macOS
 
-echo "🚀 Starting PokeSync setup for macOS..."
+echo "Starting PokeSync setup for macOS..."
 
 # Check for Python
 if ! command -v python3 &> /dev/null; then
-    echo "❌ Python3 is not installed. Please install it (e.g., via brew install python) and try again."
+    echo "Python3 is not installed. Please install it (e.g., via brew install python) and try again."
     exit 1
 fi
 
 # Check for Git
 if ! command -v git &> /dev/null; then
-    echo "❌ Git is not installed. Please install it and try again."
+    echo "Git is not installed. Please install it and try again."
     exit 1
 fi
 
 # Create directories
-echo "📁 Creating necessary directories..."
+echo "Creating necessary directories..."
 mkdir -p backups
 mkdir -p save_repo
 
 # Create config.json if it doesn't exist
 if [ ! -f config.json ]; then
-    echo "⚙️ Initializing config.json..."
+    echo "Initializing config.json..."
     echo "{}" > config.json
 fi
 
 # Install dependencies
-echo "📦 Installing dependencies..."
+echo "Installing dependencies..."
 # On macOS, it's safer to use python3 -m pip
 python3 -m pip install -r requirements.txt
 
 if [ $? -eq 0 ]; then
-    echo "✅ Setup complete! You can now run PokeSync using:"
+    echo "Setup complete! You can now run PokeSync using:"
     echo "   python3 main.py"
 else
-    echo "❌ Failed to install dependencies. If you are using macOS's system Python, you might need to use a virtual environment or 'pip install --break-system-packages'."
+    echo "Failed to install dependencies. If you are using macOS's system Python, you might need to use a virtual environment or 'pip install --break-system-packages'."
     exit 1
 fi

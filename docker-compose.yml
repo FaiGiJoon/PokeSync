@@ -5,12 +5,33 @@ services:
     environment:
       - DISPLAY=${DISPLAY:-:0}
       - CITRA_PATH=/app/citra_data
+      - TS_AUTHKEY=${TS_AUTHKEY}
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
       - ./backups:/app/backups
       - ./save_repo:/app/save_repo
-      - ./config.json:/app/config.json
-      # Mount your local Citra directory here
+      - ./vault.db:/app/vault.db
+      - ./logs:/app/logs
       - ${CITRA_SAVE_PATH:-~/.local/share/citra-emu}:/app/citra_data
     network_mode: host
-    privileged: true # Often needed for X11 access
+    privileged: true
+    restart: always
+
+  filebrowser:
+    image: filebrowser/filebrowser:latest
+    container_name: pokesync-vault-explorer
+    ports:
+      - "8080:80"
+    volumes:
+      - ./save_repo:/srv
+      - ./filebrowser.db:/database.db
+      - ./filebrowser.json:/.filebrowser.json
+    restart: always
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: pokesync-auto-update
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 3600
+    restart: always

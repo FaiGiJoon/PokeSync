@@ -1,65 +1,37 @@
-# PokeSync - Universal Citra Save Sync
+# Project Aether-Vault: Secure Save-State Infrastructure
 
-PokeSync is a simple tool to keep your Citra saves synchronized between multiple computers using a Cloud folder (Dropbox/OneDrive) or GitHub.
+Project Aether-Vault is a hardened, production-ready environment for synchronizing application data and Citra save files across multiple platforms using a Zero-Trust networking model.
 
-## ✨ Features
-- **Universal Sync**: Works with ALL 3DS games (Pokémon, Zelda, Mario, etc.).
-- **Safe**: Automatically backs up your saves before syncing.
-- **Smart**: Warns you if you are about to overwrite a newer save.
-- **Easy UI**: Simple buttons to "Push" (upload) or "Pull" (download) your progress.
+## Features
+- Distributed Vault: SQLite-backed configuration and metadata tracking.
+- Atomic Synchronization: SHA-256 deduplication and Git-based versioning for all saves.
+- Zero-Trust Networking: Automated Tailscale integration with SSH hardening.
+- Monitoring: Heartbeat system with Discord/Slack webhook notifications.
+- Orchestration: Multi-container stack (App, FileBrowser, Watchtower).
 
-## 🚀 Quick Start (3 Commands)
+## Quick Start (3 Commands)
 
-### Linux
+### 1. Initialize Infrastructure
 ```bash
 git clone <your-repo-url> && cd pokesync
-./setup.sh
-python3 main.py
+./setup.sh  # or setup_macos.sh / .\install.ps1
 ```
 
-### Windows
-```powershell
-git clone <your-repo-url>; cd pokesync
-.\install.ps1
-python main.py
-```
+### 2. Configure Environment
+Edit the `.env` file with your `TS_AUTHKEY` and `DISCORD_WEBHOOK_URL`.
 
-### macOS
-```bash
-git clone <your-repo-url> && cd pokesync
-./setup_macos.sh
-python3 main.py
-```
-
-### Docker (Production Ready)
+### 3. Launch Stack
 ```bash
 docker-compose up -d
 ```
 
-## 📖 How to Sync
+## Security Audit
+This project utilizes Tailscale SSH, which enforces identity-based authentication rather than static passwords. By moving the service behind a WireGuard-based mesh, we eliminate the need for dangerous router port forwarding (NAT traversal).
 
-### Option A: Local Cloud (Easiest)
-1. Set **Sync Mode** to "Local Folder".
-2. Click **Browse Cloud Path** and select a folder in your Dropbox, OneDrive, or Google Drive.
-3. Use **Push** to upload your save and **Pull** on your other computer.
+## Data Lifecycle
+- All saves are hashed (SHA-256) before transfer to prevent redundant writes.
+- Git commits are automatically generated for every sync, providing a "Save-Scumming" historical record.
+- FileBrowser provides a secure web UI (Port 8080) for manual vault exploration.
 
-### Option B: GitHub (Advanced)
-See the [GUIDE.md](GUIDE.md) for step-by-step GitHub setup.
-
-## 🛡️ Safety & Security
-- **Backups**: Your saves are stored in `backups/` every time you pull.
-- **Isolation**: When using Docker, the app runs in a containerized environment.
-- **Secure Access**: We recommend using **Tailscale** for remote access (see below).
-
-## 🌐 Remote Access (Tailscale)
-To sync your saves from anywhere without opening ports on your router:
-1. **Install Tailscale** on both your local and remote machines.
-2. **Enable Tailscale SSH** in your Tailscale dashboard.
-3. Use the included `sync_data.py` script to fetch saves securely:
-   ```bash
-   python sync_data.py [user] [tailscale-ip] 22 [remote-path] [local-path]
-   ```
-
-## ⚙️ Advanced: Auto-Run on Boot (Linux)
-1. Copy the service file: `cp pokesync.service ~/.config/systemd/user/`
-2. Enable it: `systemctl --user enable --now pokesync.service`
+## Monitoring
+The Pulse system (pulse.py) monitors host health and disk usage, sending alerts via the configured Discord webhook if free space drops below 10%.

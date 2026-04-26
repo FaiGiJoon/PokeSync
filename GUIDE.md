@@ -17,6 +17,6 @@
     - **Token/PAT**: The token you just created.
 4.  **First Push**: Click **Push** on a game to upload it.
 
-## ❓ FAQ
+## FAQ
 - **Game not showing?**: Open the game once in Citra so it creates a save file.
 - **Randomizers?**: Yes, they work exactly the same as normal games!

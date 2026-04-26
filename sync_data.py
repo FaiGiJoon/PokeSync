@@ -8,7 +8,7 @@ def sync_data(remote_user, remote_host, remote_port, remote_path, local_path):
     Uses scp to download the latest save file from a remote machine.
     Attempts to find the latest 'main' file if remote_path is a directory (Linux remotes only).
     """
-    print(f"🔄 Syncing from {remote_user}@{remote_host}:{remote_path}...")
+    print(f"Syncing from {remote_user}@{remote_host}:{remote_path}...")
 
     # Ensure local directory exists
     os.makedirs(os.path.dirname(local_path), exist_ok=True)
@@ -31,10 +31,10 @@ def sync_data(remote_user, remote_host, remote_port, remote_path, local_path):
         find_result = subprocess.run(find_cmd, capture_output=True, text=True, timeout=10)
         if find_result.returncode == 0 and find_result.stdout.strip():
             remote_target = find_result.stdout.strip()
-            print(f"🔍 Found latest save at: {remote_target}")
+            print(f"Found latest save at: {remote_target}")
     except Exception as e:
         # Fallback to the provided path if ssh find fails
-        print(f"ℹ️ Could not perform remote search (fallback to provided path): {e}")
+        print(f"Could not perform remote search (fallback to provided path): {e}")
 
     # Construct SCP command
     # -P: port, -p: preserve mtimes
@@ -50,10 +50,10 @@ def sync_data(remote_user, remote_host, remote_port, remote_path, local_path):
 
     try:
         result = subprocess.run(cmd, check=True, capture_output=True, text=True)
-        print("✅ Sync complete!")
+        print("Sync complete!")
         print(result.stdout)
     except subprocess.CalledProcessError as e:
-        print(f"❌ Sync failed with error code {e.returncode}")
+        print(f"Sync failed with error code {e.returncode}")
         print(e.stderr)
         sys.exit(1)
 
