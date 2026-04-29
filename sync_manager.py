@@ -118,6 +118,13 @@ class SyncManager:
                         self._repo.remotes.origin.set_url(auth_url)
             else:
                 self._repo = Repo.clone_from(auth_url, SAVE_REPO_DIR, env={"GIT_TERMINAL_PROMPT": "0"})
+
+            # Ensure local git config is set for this repo
+            with self._repo.config_writer() as cw:
+                cw.set_value("user", "name", username)
+                cw.set_value("user", "email", f"{username}@users.noreply.github.com")
+                cw.release()
+
             return True, "GitHub repo ready."
         except GitCommandError as e:
             if "Authentication failed" in str(e):
@@ -140,9 +147,10 @@ class SyncManager:
             if not success: return "error", msg
             try:
                 self._repo.remotes.origin.pull()
-                remote_path = self._get_github_sync_path(game["id"])
-            except Exception as e:
-                return "error", str(e)
+            except Exception:
+                # Pull might fail if the repo is empty
+                pass
+            remote_path = self._get_github_sync_path(game["id"])
         else:
             remote_path = self._get_local_sync_path(game["id"])
             if not remote_path: return "error", "Cloud path not set."
