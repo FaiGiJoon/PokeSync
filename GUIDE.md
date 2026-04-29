@@ -7,16 +7,16 @@
 4.  **Push** to upload, **Pull** to download.
 
 ## 2. GitHub Sync (Step-by-Step)
-1.  **Create a Private Repo**: Create a new private repository on GitHub (e.g. `citra-saves`).
+1.  **Create a Repo**: Create a new repository on GitHub (e.g. `citra-saves`). It can be private or public.
 2.  **Get a Token**:
     - Go to GitHub Settings -> Developer settings -> Personal access tokens -> Tokens (classic).
     - Generate a token with the **repo** scope.
 3.  **Fill in PokeSync**:
-    - **Repo URL**: The link to your repo (e.g. `https://github.com/user/citra-saves.git`).
+    - **Repo URL**: The link to your repo (e.g. `https://github.com/user/citra-saves.git`). You can use any repository you have access to.
     - **Username**: Your GitHub username.
-    - **Token/PAT**: The token you just created.
+    - **Token/PAT**: The Personal Access Token you just created.
 4.  **First Push**: Click **Push** on a game to upload it.
 
-## ❓ FAQ
+## FAQ
 - **Game not showing?**: Open the game once in Citra so it creates a save file.
 - **Randomizers?**: Yes, they work exactly the same as normal games!
