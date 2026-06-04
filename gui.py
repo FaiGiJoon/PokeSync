@@ -24,16 +24,18 @@ class PokeSyncGUI(ctk.CTk):
         self.sidebar = ctk.CTkFrame(self, width=250, corner_radius=0)
         self.sidebar.grid(row=0, column=0, rowspan=2, sticky="nsew")
 
+        self.sidebar.grid_columnconfigure(0, weight=1)
+
         self.logo_label = ctk.CTkLabel(self.sidebar, text="PokeSync", font=ctk.CTkFont(size=20, weight="bold"))
-        self.logo_label.pack(padx=20, pady=(20, 10))
+        self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10), sticky="ew")
 
         # Sync Mode Toggle
         self.mode_label = ctk.CTkLabel(self.sidebar, text="Sync Mode:", anchor="w")
-        self.mode_label.pack(padx=20, pady=(10, 0), fill="x")
+        self.mode_label.grid(row=1, column=0, padx=20, pady=(10, 0), sticky="ew")
 
         self.mode_switch = ctk.CTkOptionMenu(self.sidebar, values=["Local Folder", "GitHub"],
                                               command=self.change_sync_mode)
-        self.mode_switch.pack(padx=20, pady=(0, 20), fill="x")
+        self.mode_switch.grid(row=2, column=0, padx=20, pady=(0, 20), sticky="ew")
         initial_mode = "GitHub" if self.manager.config.get("sync_mode") == "github" else "Local Folder"
         self.mode_switch.set(initial_mode)
 
@@ -48,9 +50,10 @@ class PokeSyncGUI(ctk.CTk):
         self.entry_user = self.create_setting_entry(self.github_frame, "Username:", "github_username")
         self.entry_token = self.create_setting_entry(self.github_frame, "Token/PAT:", "github_token", show="*")
 
-        # Bottom Spacer (for pack)
+        # Bottom Spacer
+        self.sidebar.grid_rowconfigure(4, weight=1)
         self.sidebar_spacer = ctk.CTkLabel(self.sidebar, text="")
-        self.sidebar_spacer.pack(side="bottom", pady=20)
+        self.sidebar_spacer.grid(row=5, column=0, pady=20)
 
         self.update_settings_visibility(initial_mode)
 
@@ -98,13 +101,13 @@ class PokeSyncGUI(ctk.CTk):
 
     def update_settings_visibility(self, mode):
         # Always remove both first
-        self.local_frame.pack_forget()
-        self.github_frame.pack_forget()
+        self.local_frame.grid_forget()
+        self.github_frame.grid_forget()
 
         if mode == "GitHub":
-            self.github_frame.pack(fill="x")
+            self.github_frame.grid(row=3, column=0, sticky="ew")
         else:
-            self.local_frame.pack(fill="x")
+            self.local_frame.grid(row=3, column=0, sticky="ew")
 
     def browse_cloud_path(self):
         path = filedialog.askdirectory()
