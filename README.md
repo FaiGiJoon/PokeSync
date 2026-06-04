@@ -19,7 +19,7 @@ python3 main.py
 
 ### Windows
 ```powershell
-git clone <your-repo-url>; cd pokesync
+git clone <](https://github.com/FaiGiJoon/PokeSync)>; cd pokesync
 .\install.ps1
 python main.py
 ```
