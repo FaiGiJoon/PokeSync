@@ -28,7 +28,8 @@ class SyncManager:
                         "cloud_path": "",
                         "github_repo_url": "",
                         "github_token": "",
-                        "github_username": ""
+                        "github_username": "",
+                        "last_sync": {}
                     }
                     for k, v in defaults.items():
                         if k not in config:
@@ -41,7 +42,8 @@ class SyncManager:
             "cloud_path": "",
             "github_repo_url": "",
             "github_token": "",
-            "github_username": ""
+            "github_username": "",
+            "last_sync": {}
         }
 
     def save_config(self):
@@ -166,15 +168,29 @@ class SyncManager:
 
     def push_save(self, game):
         if self.config.get("sync_mode") == "github":
-            return self._push_github(game)
+            success, msg = self._push_github(game)
         else:
-            return self._push_local(game)
+            success, msg = self._push_local(game)
+
+        if success:
+            self._update_last_sync(game["id"])
+        return success, msg
 
     def pull_save(self, game):
         if self.config.get("sync_mode") == "github":
-            return self._pull_github(game)
+            success, msg = self._pull_github(game)
         else:
-            return self._pull_local(game)
+            success, msg = self._pull_local(game)
+
+        if success:
+            self._update_last_sync(game["id"])
+        return success, msg
+
+    def _update_last_sync(self, game_id):
+        if "last_sync" not in self.config:
+            self.config["last_sync"] = {}
+        self.config["last_sync"][game_id] = datetime.now().isoformat()
+        self.save_config()
 
     def _push_local(self, game):
         cloud_path = self._get_local_sync_path(game["id"])
