@@ -2,7 +2,7 @@
 
 PokeSync backs up and syncs your emulator saves between computers using a cloud folder (Dropbox/OneDrive/Google Drive) or GitHub. If a save ever disappears, it is still in your cloud copy and can be restored from the app.
 
-![PokeSync Screenshot](screenshot.png)
+![PokeSync Screenshot](docs/screenshots/1-library.png)
 
 ## Features
 - **Many emulators**: Nintendo 3DS, DS, GB/GBC/GBA, GameCube, Wii, PlayStation 1/2, PSP, and anything you run through RetroArch. See [Supported emulators](#supported-emulators).
